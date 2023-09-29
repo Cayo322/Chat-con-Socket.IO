@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chat con Socket.IO</title>
+    <style>
+        body {
+            padding: 0;
+            background: #D5DBDB ;
+        }
+
+        p {
+            font-family: "Courier New", monospace;
+            font-size: 100%;
+            vertical-align: initial;
+            outline: none;
+            padding: 0;
+            margin: 0;
+            border: 0;
+        }
+
+        strong {
+            font: oblique bold 120% cursive;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .chat-box {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            background-image: url('https://i.pinimg.com/736x/8c/98/99/8c98994518b575bfd8c949e91d20548b.jpg');
+        }
+
+        .chat-header {
+            background-color: #128C7E;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .chat-messages {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .message {
+            border-bottom: 1px solid #eee;
+            padding: 10px;
+            font: italic;
+        }
+
+        .message img {
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .message-content {
+            display: flex;
+            align-items: center;
+        }
+
+        .message-details {
+            flex-grow: 1;
+        }
+
+        .message-time {
+            margin-left: auto;
+            font-size: 100%;
+            font-family: monospace;
+            color: #128C7E;
+        }
+
+        .containersd {
+            display: flex;
+        }
+
+        .user-chat {
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        .user-chat form {
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .user-chat input {
+            width: calc(100% - 20px);
+            margin-right: 10px;
+            padding: 5px;
+        }
+
+        .user-chat button {
+            padding: 5px 10px;
+        }
+
+        .user1-message {
+            background-color: #DFF0D8;
+            border-radius: 8px;
+        }
+
+        .user2-message {
+            background-color: #D9EDF7;
+            border-radius: 8px;
+        }
+
+        /* ... (resto de los estilos) ... */
+
+        .message-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .message-right {
+            display: flex;
+            flex-direction: row-reverse;
+        }
+
+        .message-right img {
+            margin-left: 10px;
+            margin-right: 0;
+        }
+
+
+        .message-right .message-details {
+            text-align: right;
+
+        }
+
+        /* ... (resto de los estilos) ... */
+    </style>
+       <script src="/socket.io/socket.io.js"></script>
+
+       <script>
+           var socket = io();
+           var mensajes = [];
+   
+           function enviarMensaje(chatId) {
+               var mensaje = document.getElementById('mensaje' + chatId).value;
+               socket.emit('chat message', { chatId: chatId, msg: mensaje });
+               document.getElementById('mensaje' + chatId).value = '';
+               return false;
+           }
+   
+           function recibirMensaje(chatId, msg) {
+               var mensaje = {
+                   chatId: chatId,
+                   msg: msg,
+                   time: new Date().toLocaleTimeString()
+               };
+               mensajes.push(mensaje);
+   
+               // Ordenar mensajes por tiempo
+               mensajes.sort((a, b) => new Date(a.time) - new Date(b.time));
+   
+               var listaMensajes = document.getElementById('lista-mensajes');
+               listaMensajes.innerHTML = '';
+   
+               mensajes.forEach(function (mensaje) {
+                   var li = document.createElement('li');
+                   li.className = 'message';
+   
+                   var userPhoto = (mensaje.chatId === 1) ? 'https://assets.goal.com/v3/assets/bltcc7a7ffd2fbf71f5/blt3125544effd09308/639f60c65d0ea95c1ee0e6c3/GettyImages-1450106798.jpg?auto=webp&format=pjpg&width=3840&quality=60' : 'https://depor.com/resizer/s0361NcUR8b66xQi20Ul-hDFEko=/1200x900/smart/filters:format(jpeg):quality(75)/cloudfront-us-east-1.images.arcpublishing.com/elcomercio/W4ALYOSM4VGH5AMALETON57WHY.jpeg';
+                   var username = (mensaje.chatId === 1) ? 'Messi' : 'Serresiete';
+                   var alignmentClass = (mensaje.chatId === 1) ? 'message-left' : 'message-right';
+   
+                   li.innerHTML = `<div class="message-content ${alignmentClass}">
+                                       <img src="${userPhoto}" alt="Usuario" height="70" width="70">
+                                       <div class="message-details">
+                                           <strong>${username}</strong>
+                                           <p>${mensaje.msg}</p>
+                                           <span class="message-time">${mensaje.time}</span>
+                                       </div>
+                                   </div>`;
+                   listaMensajes.appendChild(li);
+               });
+           }
+   
+           socket.on('chat message', function (data) {
+               recibirMensaje(data.chatId, data.msg);
+           });
+       </script>
+   </head>
+   
+   <body>
+       <div class="container">
+           <div class="chat-box">
+               <div class="chat-header">LOS INSANOS</div>
+               <ul id="lista-mensajes" class="chat-messages"></ul>
+           </div>
+   
+           <div class="containersd">
+               <div class="user-chat" id="user1">
+                   <h2>Messi</h2>
+                   <form onsubmit="return enviarMensaje(1)">
+                       <input id="mensaje1" autocomplete="off" />
+                       <button>Enviar</button>
+                   </form>
+               </div>
+   
+               <div class="user-chat" id="user2">
+                   <h2>Serresiete</h2>
+                   <form onsubmit="return enviarMensaje(2)">
+                       <input id="mensaje2" autocomplete="off" />
+                       <button>Enviar</button>
+                   </form>
+               </div>
+           </div>
+       </div>
+   </body>
